@@ -22,9 +22,11 @@ class Camera:
     kombu_producer = None
     kombu_queue = None
 
-    def __init__(self, camera_id, frames_per_second_to_process):
+    def __init__(self, camera_id, frames_per_second_to_process,imapi_url):
         self.camera_id = camera_id
         self.frames_per_second_to_process = frames_per_second_to_process
+        self.imapi_url = imapi_url
+
 
 
     def attach_to_message_broker(self, broker_url, broker_username,
@@ -69,7 +71,9 @@ class Camera:
             #userpass = b64encode(b"<username>:<password>").decode("ascii")
             # Check if the video exists
             headers = {'Content-type':'video/mp4'}#, 'Authorization': 'Basic ' + userpass}
-            response = requests.post("http://localhost:8083/videoClips", files=files, headers=headers)
+            url = "http://"+self.imapi_url+"/videoClips"
+            print(url)
+            response = requests.post(url, files=files, headers=headers)
             print("Request status: %s" % response.status_code)
         print("end")
 

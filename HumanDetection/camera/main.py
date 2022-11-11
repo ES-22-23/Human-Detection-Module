@@ -21,6 +21,8 @@ RABBIT_MQ_IMAPI_EXCHANGE_NAME = os.environ["RABBIT_PASSWORD"]
 RABBIT_MQ_HD_QUEUE_NAME = os.environ["RABBIT_HD_QUEUE"]
 RABBIT_MQ_HD_EXCHANGE_NAME = os.environ["RABBIT_HD_EXCHANGE_NAME"]
 
+IMAPI_URL = os.environ["RABBIT_HOST"] + ":8083" 
+
 # RABBIT_MQ_URL = "localhost:5672"
 # RABBIT_MQ_USERNAME = "myuser"
 # RABBIT_MQ_PASSWORD = "mypassword"
@@ -33,7 +35,8 @@ RABBIT_MQ_HD_EXCHANGE_NAME = os.environ["RABBIT_HD_EXCHANGE_NAME"]
 
 camera = Camera(
     camera_id=CAMERA_ID,
-    frames_per_second_to_process=NUM_FRAMES_PER_SECOND_TO_PROCESS
+    frames_per_second_to_process=NUM_FRAMES_PER_SECOND_TO_PROCESS,
+    imapi_url= IMAPI_URL
     )
 
 camera.attach_to_message_broker(
