@@ -9,7 +9,10 @@ import cv2
 import imutils
 import kombu
 import datetime
+import json 
+import requests
 
+import asyncio
 
 class Camera:
 
@@ -19,9 +22,11 @@ class Camera:
     kombu_producer = None
     kombu_queue = None
 
-    def __init__(self, camera_id, frames_per_second_to_process):
+    def __init__(self, camera_id, frames_per_second_to_process,imapi_url):
         self.camera_id = camera_id
         self.frames_per_second_to_process = frames_per_second_to_process
+        self.imapi_url = imapi_url
+
 
 
     def attach_to_message_broker(self, broker_url, broker_username,
@@ -55,6 +60,22 @@ class Camera:
         self.kombu_queue.maybe_bind(self.kombu_connection)
         self.kombu_queue.declare()
 
+
+    def process_message(self, body, message):
+        print("The following message has been received: %s" % body)
+        print(type(body))
+        dict = json.loads(str(body))
+        if dict["cameraId"]==self.camera_id:
+            files = {'file': open("samples/people-detection.mp4", 'rb')}
+
+            #userpass = b64encode(b"<username>:<password>").decode("ascii")
+            # Check if the video exists
+            headers = {'Content-type':'video/mp4'}#, 'Authorization': 'Basic ' + userpass}
+            url = "http://"+self.imapi_url+"/videoClips"
+            print(url)
+            response = requests.post(url, files=files, headers=headers)
+            print("Request status: %s" % response.status_code)
+        print("end")
 
     def transmit_video(self, video_path):
         video = cv2.VideoCapture(video_path)
@@ -123,3 +144,37 @@ class Camera:
                 break
 
             frame_count += 1
+
+    def consumer(self,  queue_name):
+        # connection_string = f"amqp://{broker_username}:{broker_password}" \
+        # f"@{broker_url}/"
+
+        # # Kombu Connection
+        # self.kombu_connection = kombu.Connection(connection_string)
+        # self.kombu_channel = self.kombu_connection.channel()
+
+        # conn= self.kombu_connection.clone()
+        # Kombu Exchange
+        # self.kombu_imapi_exchange = kombu.Exchange(
+        #     name=exchange_name,
+        #     type="direct",
+        #     delivery_mode=1
+        # )
+        # Kombu Queue
+        self.kombu_imapi_queue = kombu.Queue(
+            name=queue_name,
+            #exchange=self.kombu_exchange
+        )
+        self.kombu_queue.maybe_bind(self.kombu_connection)
+        self.kombu_queue.declare()
+
+        # Create the consumer
+        self.consumer=kombu.Consumer(self.kombu_connection, queues=self.kombu_imapi_queue, callbacks=[self.process_message],accept=["text/plain"])
+
+        self.consumer.consume()
+        self.kombu_connection.drain_events()
+
+
+
+
+
