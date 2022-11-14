@@ -6,10 +6,10 @@
 # @Last Modified time: 2022-10-06 11:19:15
 import os
 from camera import Camera
-
+import sys
 
 # CAMERA VARIABLES
-CAMERA_ID = 1
+CAMERA_ID = int(sys.argv[1])
 NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
 
 # AMQP Variables

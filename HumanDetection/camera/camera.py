@@ -66,14 +66,16 @@ class Camera:
         print(type(body))
         dict = json.loads(str(body))
         if dict["cameraId"]==self.camera_id:
-            files = {'file': open("samples/people-detection.mp4", 'rb')}
-
+            files = {'document': open("samples/people-detection.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
+            params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
             #userpass = b64encode(b"<username>:<password>").decode("ascii")
             # Check if the video exists
-            headers = {'Content-type':'video/mp4'}#, 'Authorization': 'Basic ' + userpass}
+            #headers = {'Content-type':'multipart/form-data; boundary=562436211435313341'}#, 'Authorization': 'Basic ' + userpass}
             url = "http://"+self.imapi_url+"/videoClips"
             print(url)
-            response = requests.post(url, files=files, headers=headers)
+            print(files["document"].peek())
+            response = requests.post(url, files=files, params=params)
+            #print(response.text)
             print("Request status: %s" % response.status_code)
         print("end")
 
