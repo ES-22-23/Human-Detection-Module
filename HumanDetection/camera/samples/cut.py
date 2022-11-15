@@ -1,4 +1,4 @@
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 
-ffmpeg_extract_subclip("people-detection.mp4", 0, 10)
+ffmpeg_extract_subclip("people-detection.mp4", 0, 10, targetname="test.mp4")

@@ -12,8 +12,7 @@ import datetime
 import json 
 import requests
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
-import asyncio
-
+import os
 
 
 class Camera:
@@ -74,9 +73,9 @@ class Camera:
         dict = json.loads(str(body))
         if dict["cameraId"]==self.camera_id:
             startTime= dict["timestamp"]-180 if dict["timestamp"]-180>0 else 0
-            startTime= dict["timestamp"]+180 if dict["timestamp"]+180>0 else 0
-            ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, 10, targetname="test.mp4")
-            files = {'document': open("samples/people-detection.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
+            endTime= dict["timestamp"]+180 if dict["timestamp"]+180>0 else 0
+            ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, endTime, targetname="temp.mp4")
+            files = {'document': open("temp.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
             params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
             #userpass = b64encode(b"<username>:<password>").decode("ascii")
             # Check if the video exists
@@ -84,9 +83,14 @@ class Camera:
             url = "http://"+self.imapi_url+"/videoClips"
             print(url)
             print(files["document"].peek())
-            response = requests.post(url, files=files, params=params)
-            #print(response.text)
-            print("Request status: %s" % response.status_code)
+            try:
+                response = requests.post(url, files=files, params=params)
+                #print(response.text)
+                print("Request status: %s" % response.status_code)
+            finally:
+                os.remove("temp.mp4")
+                print("Removing temp.mp4")
+
         print("end")
 
     def transmit_video(self, video_path):
