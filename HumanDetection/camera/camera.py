@@ -11,8 +11,10 @@ import kombu
 import datetime
 import json 
 import requests
-
+from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import asyncio
+
+
 
 class Camera:
 
@@ -22,10 +24,15 @@ class Camera:
     kombu_producer = None
     kombu_queue = None
 
-    def __init__(self, camera_id, frames_per_second_to_process,imapi_url):
+    def __init__(self, frames_per_second_to_process,imapi_url,property, camera_id=-1):
         self.camera_id = camera_id
         self.frames_per_second_to_process = frames_per_second_to_process
         self.imapi_url = imapi_url
+        self.property = property
+
+    def disc_message(self, disc_url, ):
+        response = requests.get(disc_url,self.property).json()
+        self.camera_id = ...
 
 
 
@@ -66,6 +73,9 @@ class Camera:
         print(type(body))
         dict = json.loads(str(body))
         if dict["cameraId"]==self.camera_id:
+            startTime= dict["timestamp"]-180 if dict["timestamp"]-180>0 else 0
+            startTime= dict["timestamp"]+180 if dict["timestamp"]+180>0 else 0
+            ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, 10, targetname="test.mp4")
             files = {'document': open("samples/people-detection.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
             params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
             #userpass = b64encode(b"<username>:<password>").decode("ascii")

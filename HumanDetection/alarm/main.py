@@ -5,16 +5,11 @@
 # @Last Modified by:   Rafael Direito
 # @Last Modified time: 2022-10-06 11:19:15
 import os
-from camera import Camera
+from Alarm import Alarm
 import sys
 
-from flask import Flask, jsonify, request
-  
-# creating a Flask app
-app = Flask(__name__)
-
-# CAMERA VARIABLES
-CAMERA_ID = int(sys.argv[1])
+# ALARM VARIABLES
+ALARM_ID = int(sys.argv[1])
 NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
 
 # AMQP Variables
@@ -23,8 +18,6 @@ RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
 RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
 RABBIT_MQ_IMAPI_QUEUE_NAME = os.environ["RABBIT_IMAPI_QUEUE"]
 RABBIT_MQ_IMAPI_EXCHANGE_NAME = os.environ["RABBIT_PASSWORD"]
-RABBIT_MQ_HD_QUEUE_NAME = os.environ["RABBIT_HD_QUEUE"]
-RABBIT_MQ_HD_EXCHANGE_NAME = os.environ["RABBIT_HD_EXCHANGE_NAME"]
 
 IMAPI_URL = os.environ["RABBIT_HOST"] + ":8083" 
 
@@ -35,42 +28,25 @@ IMAPI_URL = os.environ["RABBIT_HOST"] + ":8083"
 # RABBIT_MQ_HD_QUEUE_NAME = "human-detection-queue"
 
 
-@app.route('/', methods = ['GET', 'POST'])
-def home():
-    if(request.method == 'GET'):
-  
-        data = "hello world"
-        return jsonify({'data': data})
 
 
-camera = Camera(
-    camera_id=CAMERA_ID,
+
+alarm = Alarm(
+    alarm_id=ALARM_ID,
     frames_per_second_to_process=NUM_FRAMES_PER_SECOND_TO_PROCESS,
     imapi_url= IMAPI_URL,
     property="DETI"
     )
 
-camera.attach_to_message_broker(
-    broker_url=RABBIT_MQ_URL,
-    broker_username=RABBIT_MQ_USERNAME,
-    broker_password=RABBIT_MQ_PASSWORD,
-    exchange_name=RABBIT_MQ_HD_EXCHANGE_NAME,
-    queue_name=RABBIT_MQ_HD_QUEUE_NAME,
-    )
-
-camera.transmit_video("samples/people-detection.mp4")
 
 print("End of video transmission")
 
-camera.consumer(
+alarm.consumer(
     #exchange_name=RABBIT_MQ_IMAPI_EXCHANGE_NAME,
     queue_name=RABBIT_MQ_IMAPI_QUEUE_NAME,
+    broker_url=RABBIT_MQ_URL,
+    broker_username=RABBIT_MQ_USERNAME,
+    broker_password=RABBIT_MQ_PASSWORD,
 )
 
-
-# driver function
-if __name__ == '__main__':
-  
-    app.run(debug = True)
-    
 
