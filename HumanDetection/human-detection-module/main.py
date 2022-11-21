@@ -7,13 +7,14 @@
 
 
 from human_detection import Human_Detection_Module
+import os
 
 # AMQP Variables
-RABBIT_MQ_URL = "localhost:5672"
-RABBIT_MQ_USERNAME = "user"
-RABBIT_MQ_PASSWORD = "password"
-RABBIT_MQ_EXCHANGE_NAME = "human-detection-exchange"
-RABBIT_MQ_QUEUE_NAME = "human-detection-queue"
+RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
+RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
+RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
+RABBIT_MQ_EXCHANGE_NAME = os.environ["RABBIT_HD_EXCHANGE_NAME"]
+RABBIT_MQ_QUEUE_NAME = os.environ["RABBIT_HD_QUEUE"]
 
 # OUTPUT
 OUTPUT_DIR = "intruders"
