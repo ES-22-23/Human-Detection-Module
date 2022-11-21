@@ -7,6 +7,7 @@
 import os
 from camera import Camera
 import sys
+import asyncio
 
 from flask import Flask, jsonify, request
   
@@ -58,16 +59,15 @@ camera.attach_to_message_broker(
     queue_name=RABBIT_MQ_HD_QUEUE_NAME,
     )
 
-camera.consumer(
-    #exchange_name=RABBIT_MQ_IMAPI_EXCHANGE_NAME,
-    queue_name=RABBIT_MQ_IMAPI_QUEUE_NAME,
-)
+async def loopFogo():
+    print("teste1")    
+    transmit_video = asyncio.create_task(camera.consumer(queue_name=RABBIT_MQ_IMAPI_QUEUE_NAME))
 
-#camera.transmit_video("samples/people-detection.mp4")
+    print("teste2")
+    await camera.transmit_video("samples/people-detection.mp4")
 
-print("End of video transmission")
-
-print("test")
+loop = asyncio.get_event_loop()
+loop.run_until_complete(loopFogo())
 
 # driver function
 # if __name__ == '__main__':

@@ -13,6 +13,7 @@ import json
 import requests
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import os
+import asyncio
 
 
 class Camera:
@@ -93,7 +94,7 @@ class Camera:
 
         print("end")
 
-    def transmit_video(self, video_path):
+    async def transmit_video(self, video_path):
         video = cv2.VideoCapture(video_path)
 
         # Check if the video exists
@@ -160,8 +161,9 @@ class Camera:
                 break
 
             frame_count += 1
+            await asyncio.sleep(0)
 
-    def consumer(self,  queue_name):
+    async def consumer(self,  queue_name):
         # connection_string = f"amqp://{broker_username}:{broker_password}" \
         # f"@{broker_url}/"
 
@@ -189,7 +191,8 @@ class Camera:
 
         while True:
             self.consumer.consume()
-            self.kombu_connection.drain_events()
+            #self.kombu_connection.drain_events()
+            await asyncio.sleep(0)
 
 
 
