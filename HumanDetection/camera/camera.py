@@ -72,8 +72,8 @@ class Camera:
         print(type(body))
         dict = json.loads(str(body))
         if dict["cameraId"]==self.camera_id:
-            startTime= dict["timestamp"]-180 if dict["timestamp"]-180>0 else 0
-            endTime= dict["timestamp"]+180 if dict["timestamp"]+180>0 else 0
+            startTime= 20#dict["timestamp"]-180 if dict["timestamp"]-180>0 else 0
+            endTime= 200#dict["timestamp"]+180 if dict["timestamp"]+180>0 else 0
             ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, endTime, targetname="temp.mp4")
             files = {'document': open("temp.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
             params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
@@ -187,8 +187,9 @@ class Camera:
         # Create the consumer
         self.consumer=kombu.Consumer(self.kombu_connection, queues=self.kombu_imapi_queue, callbacks=[self.process_message],accept=["text/plain"])
 
-        self.consumer.consume()
-        self.kombu_connection.drain_events()
+        while True:
+            self.consumer.consume()
+            self.kombu_connection.drain_events()
 
 
 

@@ -1,0 +1,26 @@
+I received the frame number 315 from camera_1, with the timestamp 2022-11-21 10:30:31.023952.
+I'm processing the frame...
+Frame 315 has 1 human(s), and was processed in 393.11899999999997 ms.
+
+
+I received the frame number 330 from camera_1, with the timestamp 2022-11-21 10:30:42.023952.
+I'm processing the frame...
+Frame 330 has 1 human(s), and was processed in 234.179 ms.
+
+
+I received the frame number 345 from camera_1, with the timestamp 2022-11-21 10:30:53.523952.
+I'm processing the frame...
+Frame 345 has 1 human(s), and was processed in 274.352 ms.
+[!!!] INTRUDER DETECTED AT TIMESTAMP 2022-11-21 10:30:53.523952[!!!]
+I received the frame number 345 from camera_1, with the timestamp 2022-11-21 10:30:53.523952.
+I'm processing the frame...
+Frame 345 has 1 human(s), and was processed in 335.292 ms.
+[!!!] INTRUDER DETECTED AT TIMESTAMP 2022-11-21 10:30:53.523952[!!!]
+I received the frame number 345 from camera_1, with the timestamp 2022-11-21 10:30:53.523952.
+I'm processing the frame...
+Frame 345 has 1 human(s), and was processed in 337.71099999999996 ms.
+[!!!] INTRUDER DETECTED AT TIMESTAMP 2022-11-21 10:30:53.523952[!!!]
+I received the frame number 345 from camera_1, with the timestamp 2022-11-21 10:30:53.523952.
+I'm processing the frame...
+Frame 345 has 1 human(s), and was processed in 384.209 ms.
+[!!!] INTRUDER DETECTED AT TIMESTAMP 2022-11-21 10:30:53.523952[!!!]

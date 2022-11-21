@@ -35,12 +35,12 @@ IMAPI_URL = os.environ["RABBIT_HOST"] + ":8083"
 # RABBIT_MQ_HD_QUEUE_NAME = "human-detection-queue"
 
 
-@app.route('/', methods = ['GET', 'POST'])
-def home():
-    if(request.method == 'GET'):
+# @app.route('/', methods = ['GET', 'POST'])
+# def home():
+#     if(request.method == 'GET'):
   
-        data = "hello world"
-        return jsonify({'data': data})
+#         data = "hello world"
+#         return jsonify({'data': data})
 
 
 camera = Camera(
@@ -58,19 +58,20 @@ camera.attach_to_message_broker(
     queue_name=RABBIT_MQ_HD_QUEUE_NAME,
     )
 
-camera.transmit_video("samples/people-detection.mp4")
-
-print("End of video transmission")
-
 camera.consumer(
     #exchange_name=RABBIT_MQ_IMAPI_EXCHANGE_NAME,
     queue_name=RABBIT_MQ_IMAPI_QUEUE_NAME,
 )
 
+#camera.transmit_video("samples/people-detection.mp4")
+
+print("End of video transmission")
+
+print("test")
 
 # driver function
-if __name__ == '__main__':
+# if __name__ == '__main__':
   
-    app.run(debug = True)
+#     app.run(debug = True)
     
 
