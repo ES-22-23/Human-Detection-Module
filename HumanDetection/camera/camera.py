@@ -70,11 +70,19 @@ class Camera:
 
     def process_message(self, body, message):
         print("The following message has been received: %s" % body)
-        print(type(body))
+        #print(type(body))
         dict = json.loads(str(body))
         if dict["cameraId"]==self.camera_id:
-            startTime= 20#dict["timestamp"]-180 if dict["timestamp"]-180>0 else 0
-            endTime= 200#dict["timestamp"]+180 if dict["timestamp"]+180>0 else 0
+            splitTimestamp = dict["timestamp"].split(" ")[-1].split(".")[0].split(":")
+            timestamp = int(splitTimestamp[1])%10*60+int(splitTimestamp[-1])
+            startTime= timestamp-180 
+            endTime= timestamp+179 
+            if startTime < 0:
+                startTime= abs(startTime)
+                endTime+= startTime*2 -1
+            elif endTime >  590:
+                startTime= endTime-590
+                endTime= startTime+359
             ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, endTime, targetname="temp.mp4")
             files = {'document': open("temp.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
             params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
@@ -148,10 +156,10 @@ class Camera:
                             "frame_id": frame_id
                         }
                     )
-                    print(f"[Camera {self.camera_id}] Sent a frame to " +
-                          "the human-detection module " +
-                          f"(frame_number={frame_count}, " +
-                          f"frame_timestamp={time_now})")
+                    # print(f"[Camera {self.camera_id}] Sent a frame to " +
+                    #       "the human-detection module " +
+                    #       f"(frame_number={frame_count}, " +
+                    #       f"frame_timestamp={time_now})")
 
                     frame_id += 1
                     #key = cv2.waitKey(1)
