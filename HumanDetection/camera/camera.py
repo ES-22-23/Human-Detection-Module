@@ -24,17 +24,25 @@ class Camera:
     kombu_producer = None
     kombu_queue = None
 
-    def __init__(self, frames_per_second_to_process,imapi_url,property, camera_id=-1):
+    def __init__(self, frames_per_second_to_process,imapi_url,smapi_url, keycloak_url, client_id, username, password, client_secret, camera_id=-1):
         self.camera_id = camera_id
         self.frames_per_second_to_process = frames_per_second_to_process
         self.imapi_url = imapi_url
-        self.property = property
+        self.smapi_url = smapi_url
+        self.keycloak_url = keycloak_url
+        self.propertyId = None
+
+        #needed for keycloak
+        self.client_id = client_id
+        self.username = username
+        self.password = password
+        self.grant_type = "password"
+        self.client_secret = client_secret
+        self.smapi_data = {'client_id': self.client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': self.client_secret}
 
     def disc_message(self, disc_url, ):
         response = requests.get(disc_url,self.property).json()
         self.camera_id = ...
-
-
 
     def attach_to_message_broker(self, broker_url, broker_username,
                                  broker_password, exchange_name, queue_name):
@@ -73,6 +81,13 @@ class Camera:
         print(type(body))
         dict = json.loads(str(body))
         if dict["cameraId"]==self.camera_id:
+            if self.propertyId == None:
+                token_response = requests.post(self.keycloak_url, data=self.smapi_data)
+                token_response = token_response.json()
+                access_token = "Bearer " + token_response["access_token"]
+                smapi_response = requests.post(self.smapi_url + "/cameras/" + self.camera_id, headers={"Authorization" : access_token})
+                smapi_response = smapi_response.json()
+                self.propertyId = smapi_response["propertyId"] #tenho que ver o que devolve
             startTime= 20#dict["timestamp"]-180 if dict["timestamp"]-180>0 else 0
             endTime= 200#dict["timestamp"]+180 if dict["timestamp"]+180>0 else 0
             ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, endTime, targetname="temp.mp4")
