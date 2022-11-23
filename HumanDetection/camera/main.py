@@ -8,14 +8,14 @@ import os
 from camera import Camera
 import sys
 import asyncio
-
+import threading
 from flask import Flask, jsonify, request
   
 # creating a Flask app
 app = Flask(__name__)
 
 # CAMERA VARIABLES
-CAMERA_ID = int(sys.argv[1])
+CAMERA_ID = int(os.environ["cam_id"])
 NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
 
 # AMQP Variables
@@ -35,6 +35,15 @@ KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
 KEYCLOAK_USERNAME = os.environ["KEYCLOAK_USERNAME"]
 KEYCLOAK_PASSWORD = os.environ["KEYCLOAK_PASSWORD"]
 KEYCLOAK_SMAPI_CLIENT_SECRET = os.environ["KEYCLOAK_SMAPI_CLIENT_SECRET"]
+
+@app.route('/health', methods = ['GET'])
+def home():
+    if(request.method == 'GET'):
+  
+        return jsonify({'isAvailable': True})
+
+
+threading.Thread(target=lambda: app.run(debug = False, port=1234)).start()
 
 camera = Camera(
     camera_id=CAMERA_ID,
@@ -64,9 +73,9 @@ async def mainLoop():
 loop = asyncio.get_event_loop()
 loop.run_until_complete(mainLoop())
 
-# driver function
+# # driver function
 # if __name__ == '__main__':
   
-#     app.run(debug = True)
+#     threading.Thread(target=lambda: app.run(debug = False, port=1234)).start()
     
 
