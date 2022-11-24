@@ -15,7 +15,7 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 # CAMERA VARIABLES
-CAMERA_ID = int(os.environ["cam_id"])
+CAMERA_ID = int(os.environ["CAMERA_ID"])
 NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
 
 # AMQP Variables
@@ -66,7 +66,7 @@ camera.attach_to_message_broker(
     )
 
 async def mainLoop():
-    transmit_video = asyncio.create_task(camera.consumer(queue_name=RABBIT_MQ_IMAPI_QUEUE_NAME))
+    send_video = asyncio.create_task(camera.consumer(queue_name=RABBIT_MQ_IMAPI_QUEUE_NAME))
 
     await camera.transmit_video("samples/people-detection.mp4")
 

@@ -84,10 +84,10 @@ class Camera:
             if self.propertyId == None:
                 token_response = requests.post(self.keycloak_url, data=self.smapi_data)
                 token_response = token_response.json()
-                access_token = "Bearer " + token_response["access_token"]
-                smapi_response = requests.post(self.smapi_url + "/cameras/" + self.camera_id, headers={"Authorization" : access_token})
+                access_token = "Bearer " + str(token_response["access_token"])
+                smapi_response = requests.get("http://" + self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(access_token)})
                 smapi_response = smapi_response.json()
-                self.propertyId = smapi_response["propertyId"] #tenho que ver o que devolve
+                self.propertyId = smapi_response["property"] #tenho que ver o que devolve
             splitTimestamp = dict["timestamp"].split(" ")[-1].split(".")[0].split(":")
             timestamp = int(splitTimestamp[1])%10*60+int(splitTimestamp[-1])
             startTime= timestamp-180 
@@ -100,7 +100,7 @@ class Camera:
                 endTime= startTime+359
             ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, endTime, targetname="temp.mp4")
             files = {'document': open("temp.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
-            params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
+            params = { 'name': "propId"+str(self.propertyId)+"cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
             #userpass = b64encode(b"<username>:<password>").decode("ascii")
             # Check if the video exists
             #headers = {'Content-type':'multipart/form-data; boundary=562436211435313341'}#, 'Authorization': 'Basic ' + userpass}
