@@ -24,15 +24,25 @@ class Camera:
     kombu_producer = None
     kombu_queue = None
 
-    def __init__(self, frames_per_second_to_process,imapi_url, camera_id=-1):
+    def __init__(self, frames_per_second_to_process,imapi_url,smapi_url, keycloak_url, client_id, username, password, client_secret, camera_id=-1):
         self.camera_id = camera_id
         self.frames_per_second_to_process = frames_per_second_to_process
         self.imapi_url = imapi_url
+        self.smapi_url = smapi_url
+        self.keycloak_url = keycloak_url
+        self.propertyId = None
 
-    # def disc_message(self, disc_url, ):
-    #     response = requests.get(disc_url,self.property).json()
-    #     self.camera_id = ...
+        #needed for keycloak
+        self.client_id = client_id
+        self.username = username
+        self.password = password
+        self.grant_type = "password"
+        self.client_secret = client_secret
+        self.smapi_data = {'client_id': self.client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': self.client_secret}
 
+    def disc_message(self, disc_url, ):
+        response = requests.get(disc_url,self.property).json()
+        self.camera_id = ...
 
     def attach_to_message_broker(self, broker_url, broker_username,
                                  broker_password, exchange_name, queue_name):
