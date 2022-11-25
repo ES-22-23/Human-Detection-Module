@@ -5,19 +5,23 @@
 # @Last Modified by:   Rafael Direito
 # @Last Modified time: 2022-10-06 11:19:15
 import os
-from Alarm import Alarm
+from alarm import Alarm
 import sys
+import asyncio
+import threading
+from flask import Flask, jsonify, request
+
+# creating a Flask app
+app = Flask(__name__)
 
 # ALARM VARIABLES
-ALARM_ID = int(sys.argv[1])
-NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
+ALARM_ID = int(os.environ["ALARM_ID"])
 
 # AMQP Variables
 RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
 RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
 RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
-RABBIT_MQ_IMAPI_QUEUE_NAME = os.environ["RABBIT_IMAPI_QUEUE"]
-RABBIT_MQ_IMAPI_EXCHANGE_NAME = os.environ["RABBIT_PASSWORD"]
+RABBIT_ALARM_QUEUE = os.environ["RABBIT_ALARM_QUEUE"]
 
 IMAPI_URL = os.environ["RABBIT_HOST"] + ":8083" 
 
@@ -28,25 +32,46 @@ IMAPI_URL = os.environ["RABBIT_HOST"] + ":8083"
 # RABBIT_MQ_HD_QUEUE_NAME = "human-detection-queue"
 
 
+@app.route('/health', methods = ['GET'])
+def home():
+    if(request.method == 'GET'):
+  
+        return jsonify({'isAvailable': True})
 
+
+threading.Thread(target=lambda: app.run(debug = False, port=1235)).start()
 
 
 alarm = Alarm(
     alarm_id=ALARM_ID,
-    frames_per_second_to_process=NUM_FRAMES_PER_SECOND_TO_PROCESS,
-    imapi_url= IMAPI_URL,
-    property="DETI"
+    imapi_url= RABBIT_MQ_URL,
     )
 
 
-print("End of video transmission")
 
-alarm.consumer(
-    #exchange_name=RABBIT_MQ_IMAPI_EXCHANGE_NAME,
-    queue_name=RABBIT_MQ_IMAPI_QUEUE_NAME,
-    broker_url=RABBIT_MQ_URL,
-    broker_username=RABBIT_MQ_USERNAME,
-    broker_password=RABBIT_MQ_PASSWORD,
-)
+async def loopFogo():
+    asyncio.create_task(alarm.consumer(
+        queue_name=RABBIT_ALARM_QUEUE,
+        broker_username=RABBIT_MQ_USERNAME,
+        broker_password=RABBIT_MQ_PASSWORD,
+        ))
 
+
+
+loop = asyncio.get_event_loop()
+try:
+    asyncio.ensure_future(loopFogo())
+    loop.run_forever()
+except KeyboardInterrupt:
+    pass
+finally:
+    print("Closing Loop")
+    loop.close()
+#asyncio.run(loopFogo())
+
+# # driver function
+# if __name__ == '__main__':
+  
+#     threading.Thread(target=lambda: app.run(debug = False, port=1234)).start()
+    
 

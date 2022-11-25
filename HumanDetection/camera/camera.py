@@ -24,16 +24,14 @@ class Camera:
     kombu_producer = None
     kombu_queue = None
 
-    def __init__(self, frames_per_second_to_process,imapi_url,property, camera_id=-1):
+    def __init__(self, frames_per_second_to_process,imapi_url, camera_id=-1):
         self.camera_id = camera_id
         self.frames_per_second_to_process = frames_per_second_to_process
         self.imapi_url = imapi_url
-        self.property = property
 
-    def disc_message(self, disc_url, ):
-        response = requests.get(disc_url,self.property).json()
-        self.camera_id = ...
-
+    # def disc_message(self, disc_url, ):
+    #     response = requests.get(disc_url,self.property).json()
+    #     self.camera_id = ...
 
 
     def attach_to_message_broker(self, broker_url, broker_username,
@@ -42,6 +40,7 @@ class Camera:
         connection_string = f"amqp://{broker_username}:{broker_password}" \
             f"@{broker_url}/"
 
+        print(connection_string)
         # Kombu Connection
         self.kombu_connection = kombu.Connection(connection_string)
         self.kombu_channel = self.kombu_connection.channel()
@@ -68,39 +67,8 @@ class Camera:
         self.kombu_queue.declare()
 
 
-    def process_message(self, body, message):
-        print("The following message has been received: %s" % body)
-        #print(type(body))
-        dict = json.loads(str(body))
-        if dict["cameraId"]==self.camera_id:
-            splitTimestamp = dict["timestamp"].split(" ")[-1].split(".")[0].split(":")
-            timestamp = int(splitTimestamp[1])%10*60+int(splitTimestamp[-1])
-            startTime= timestamp-180 
-            endTime= timestamp+179 
-            if startTime < 0:
-                startTime= abs(startTime)
-                endTime+= startTime*2 -1
-            elif endTime >  590:
-                startTime= endTime-590
-                endTime= startTime+359
-            ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, endTime, targetname="temp.mp4")
-            files = {'document': open("temp.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
-            params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
-            #userpass = b64encode(b"<username>:<password>").decode("ascii")
-            # Check if the video exists
-            #headers = {'Content-type':'multipart/form-data; boundary=562436211435313341'}#, 'Authorization': 'Basic ' + userpass}
-            url = "http://"+self.imapi_url+"/videoClips"
-            print(url)
-            print(files["document"].peek())
-            try:
-                response = requests.post(url, files=files, params=params)
-                #print(response.text)
-                print("Request status: %s" % response.status_code)
-            finally:
-                os.remove("temp.mp4")
-                print("Removing temp.mp4")
 
-        print("end")
+
 
     async def transmit_video(self, video_path):
         video = cv2.VideoCapture(video_path)
@@ -171,38 +139,68 @@ class Camera:
             frame_count += 1
             await asyncio.sleep(0)
 
+
+
+    def process_message(self, body, message):
+        print("The following message has been received: %s" % body)
+        #print(type(body))
+        dict = json.loads(str(body))
+        if dict["cameraId"]==self.camera_id:
+            splitTimestamp = dict["timestamp"].split(" ")[-1].split(".")[0].split(":")
+            timestamp = int(splitTimestamp[1])%10*60+int(splitTimestamp[-1])
+            startTime= timestamp-180 
+            endTime= timestamp+179 
+            if startTime < 0:
+                startTime= abs(startTime)
+                endTime+= startTime*2 -1
+            elif endTime >  590:
+                startTime= endTime-590
+                endTime= startTime+359
+            ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, endTime, targetname="temp.mp4")
+            files = {'document': open("temp.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
+            params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
+            #userpass = b64encode(b"<username>:<password>").decode("ascii")
+            # Check if the video exists
+            #headers = {'Content-type':'multipart/form-data; boundary=562436211435313341'}#, 'Authorization': 'Basic ' + userpass}
+            url = "http://"+self.imapi_url+"/videoClips"
+            print(url)
+            #print(files["document"].peek())
+            try:
+                response = requests.post(url, files=files, params=params)
+                #print(response.text)
+                print("Request status: %s" % response.status_code)
+            finally:
+                os.remove("temp.mp4")
+                print("Removing temp.mp4")
+
+        print("end")
+        message.ack()
+
     async def consumer(self,  queue_name):
-        # connection_string = f"amqp://{broker_username}:{broker_password}" \
-        # f"@{broker_url}/"
 
-        # # Kombu Connection
-        # self.kombu_connection = kombu.Connection(connection_string)
-        # self.kombu_channel = self.kombu_connection.channel()
-
-        # conn= self.kombu_connection.clone()
-        # Kombu Exchange
-        # self.kombu_imapi_exchange = kombu.Exchange(
-        #     name=exchange_name,
-        #     type="direct",
-        #     delivery_mode=1
-        # )
         # Kombu Queue
         self.kombu_imapi_queue = kombu.Queue(
             name=queue_name,
             #exchange=self.kombu_exchange
         )
-        self.kombu_queue.maybe_bind(self.kombu_connection)
-        self.kombu_queue.declare()
+
 
         # Create the consumer
-        self.consumer=kombu.Consumer(self.kombu_connection, queues=self.kombu_imapi_queue, callbacks=[self.process_message],accept=["text/plain"])
+        with kombu.Consumer(self.kombu_connection, queues=self.kombu_imapi_queue, callbacks=[self.process_message],accept=["text/plain"]):
 
-        while True:
-            self.consumer.consume()
-            #self.kombu_connection.drain_events()
-            await asyncio.sleep(0)
-
-
+            while True:
+                #self.consumer.consume()
+                self.kombu_connection.drain_events()
+                await asyncio.sleep(0)
 
 
 
+
+
+
+
+""" 
+
+
+
+"""
