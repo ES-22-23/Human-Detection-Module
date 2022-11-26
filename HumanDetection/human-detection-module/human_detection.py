@@ -13,6 +13,7 @@ from kombu.mixins import ConsumerMixin
 import datetime
 import os
 import glob
+import requests
 
 
 # Kombu Message Consuming Human_Detection_Worker
@@ -127,6 +128,9 @@ class Human_Detection_Worker(ConsumerMixin):
             timestamp_key = f"camera_{camera_id}_frame_{frame_id}_timestamp"
             timestamp = self.database.get(timestamp_key, "")
             print(f"[!!!] INTRUDER DETECTED AT TIMESTAMP {timestamp}[!!!]")
+            obj = {"cameraId":camera_id[-1], "timestamp":timestamp}
+            intrusionAPI_url = "http://localhost:8083/intrusion"
+            x = requests.post(intrusionAPI_url, json = obj)
             return True
         return False
 

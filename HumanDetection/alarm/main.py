@@ -5,7 +5,7 @@
 # @Last Modified by:   Rafael Direito
 # @Last Modified time: 2022-10-06 11:19:15
 import os
-from camera import Camera
+from alarm import Alarm
 import sys
 import asyncio
 import threading
@@ -14,17 +14,14 @@ from flask import Flask, jsonify, request
 # creating a Flask app
 app = Flask(__name__)
 
-# CAMERA VARIABLES
-CAMERA_ID = int(os.environ["CAM_ID"])
-NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
+# ALARM VARIABLES
+ALARM_ID = int(os.environ["ALARM_ID"])
 
 # AMQP Variables
 RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
 RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
 RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
-RABBIT_MQ_CAM_EXCHANGE_NAME = os.environ["RABBIT_CAM_EXCHANGE"]
-RABBIT_MQ_HD_QUEUE_NAME = os.environ["RABBIT_HD_QUEUE"]
-RABBIT_MQ_HD_EXCHANGE_NAME = os.environ["RABBIT_HD_EXCHANGE_NAME"]
+RABBIT_ALARM_EXCHANGE = os.environ["RABBIT_ALARM_EXCHANGE"]
 
 IMAPI_URL = os.environ["IMAPI_HOST"] + ":8083"
 SMAPI_URL = os.environ["SMAPI_HOST"] + ":8082" 
@@ -35,7 +32,10 @@ KEYCLOAK_USERNAME = os.environ["KEYCLOAK_USERNAME"]
 KEYCLOAK_PASSWORD = os.environ["KEYCLOAK_PASSWORD"]
 KEYCLOAK_SMAPI_CLIENT_SECRET = os.environ["KEYCLOAK_SMAPI_CLIENT_SECRET"]
 
+
 FLASK_PORT = os.environ["FLASK_PORT"]
+
+
 
 @app.route('/health', methods = ['GET'])
 def home():
@@ -46,9 +46,9 @@ def home():
 
 threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
 
-camera = Camera(
-    camera_id=CAMERA_ID,
-    frames_per_second_to_process=NUM_FRAMES_PER_SECOND_TO_PROCESS,
+
+alarm = Alarm(
+    alarm_id=ALARM_ID,
     imapi_url= IMAPI_URL,
     smapi_url= SMAPI_URL,
     keycloak_url= KEYCLOAK_URL,
@@ -58,32 +58,30 @@ camera = Camera(
     client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET
     )
 
-camera.attach_to_message_broker(
-    broker_url=RABBIT_MQ_URL,
-    broker_username=RABBIT_MQ_USERNAME,
-    broker_password=RABBIT_MQ_PASSWORD,
-    exchange_name=RABBIT_MQ_HD_EXCHANGE_NAME,
-    queue_name=RABBIT_MQ_HD_QUEUE_NAME,
-    )
 
-async def mainLoop():
-    send_video = asyncio.create_task(camera.consumer(exchange_name=RABBIT_MQ_CAM_EXCHANGE_NAME))
 
-    await camera.transmit_video("samples/people-detection.mp4")
+async def loopFogo():
+    asyncio.create_task(alarm.consumer(
+        broker_url=RABBIT_MQ_URL,
+        kombu_imapi_exchange=RABBIT_ALARM_EXCHANGE,
+        broker_username=RABBIT_MQ_USERNAME,
+        broker_password=RABBIT_MQ_PASSWORD,
+        ))
 
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(loopFogo())
+
 
 loop = asyncio.get_event_loop()
 try:
-    asyncio.ensure_future(mainLoop())
+    asyncio.ensure_future(loopFogo())
     loop.run_forever()
 except KeyboardInterrupt:
     pass
 finally:
     print("Closing Loop")
     loop.close()
-print("Final")
+    print("Loop Closed")
+
+#asyncio.run(loopFogo())
 
 # # driver function
 # if __name__ == '__main__':
