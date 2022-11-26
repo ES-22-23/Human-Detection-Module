@@ -22,8 +22,7 @@ NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
 RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
 RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
 RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
-RABBIT_MQ_CAM_QUEUE_NAME = os.environ["RABBIT_CAM_QUEUE"]
-RABBIT_MQ_IMAPI_EXCHANGE_NAME = os.environ["RABBIT_PASSWORD"]
+RABBIT_MQ_CAM_EXCHANGE_NAME = os.environ["RABBIT_CAM_EXCHANGE"]
 RABBIT_MQ_HD_QUEUE_NAME = os.environ["RABBIT_HD_QUEUE"]
 RABBIT_MQ_HD_EXCHANGE_NAME = os.environ["RABBIT_HD_EXCHANGE_NAME"]
 
@@ -36,6 +35,8 @@ KEYCLOAK_USERNAME = os.environ["KEYCLOAK_USERNAME"]
 KEYCLOAK_PASSWORD = os.environ["KEYCLOAK_PASSWORD"]
 KEYCLOAK_SMAPI_CLIENT_SECRET = os.environ["KEYCLOAK_SMAPI_CLIENT_SECRET"]
 
+FLASK_PORT = os.environ["FLASK_PORT"]
+
 @app.route('/health', methods = ['GET'])
 def home():
     if(request.method == 'GET'):
@@ -43,7 +44,7 @@ def home():
         return jsonify({'isAvailable': True})
 
 
-threading.Thread(target=lambda: app.run(debug = False, port=1234)).start()
+threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
 
 camera = Camera(
     camera_id=CAMERA_ID,
@@ -66,7 +67,7 @@ camera.attach_to_message_broker(
     )
 
 async def mainLoop():
-    send_video = asyncio.create_task(camera.consumer(queue_name=RABBIT_MQ_CAM_QUEUE_NAME))
+    send_video = asyncio.create_task(camera.consumer(exchange_name=RABBIT_MQ_CAM_EXCHANGE_NAME))
 
     await camera.transmit_video("samples/people-detection.mp4")
 

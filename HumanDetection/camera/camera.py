@@ -40,9 +40,9 @@ class Camera:
         self.client_secret = client_secret
         self.smapi_data = {'client_id': self.client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': self.client_secret}
 
-    def disc_message(self, disc_url, ):
-        response = requests.get(disc_url,self.property).json()
-        self.camera_id = ...
+    # def disc_message(self, disc_url, ):
+    #     response = requests.get(disc_url,self.property).json()
+    #     self.camera_id = ...
 
     def attach_to_message_broker(self, broker_url, broker_username,
                                  broker_password, exchange_name, queue_name):
@@ -155,7 +155,20 @@ class Camera:
         print("The following message has been received: %s" % body)
         #print(type(body))
         dict = json.loads(str(body))
-        if dict["cameraId"]==self.camera_id:
+        if self.propertyId == None:
+            print("getting property id")
+            token_response = requests.post(self.keycloak_url, data=self.smapi_data)
+            token_response = token_response.json()
+            access_token = "Bearer " + str(token_response["access_token"])
+            smapi_response = requests.get("http://" + self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(access_token)})
+            if (smapi_response.status_code == 200):
+                smapi_response = smapi_response.json()
+                self.propertyId = smapi_response["property"] #tenho que ver o que devolve
+                print(self.propertyId)
+            else:
+                print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
+
+        if dict["cameraId"] == self.camera_id and self.propertyId != None:
             splitTimestamp = dict["timestamp"].split(" ")[-1].split(".")[0].split(":")
             timestamp = int(splitTimestamp[1])%10*60+int(splitTimestamp[-1])
             startTime= timestamp-180 
@@ -168,7 +181,7 @@ class Camera:
                 endTime= startTime+359
             ffmpeg_extract_subclip("samples/people-detection.mp4", startTime, endTime, targetname="temp.mp4")
             files = {'document': open("temp.mp4", 'rb')} # , 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]
-            params = { 'name': "cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
+            params = { 'name': "propId"+str(self.propertyId)+"cam"+str(self.camera_id)+"Video"+dict["timestamp"]}
             #userpass = b64encode(b"<username>:<password>").decode("ascii")
             # Check if the video exists
             #headers = {'Content-type':'multipart/form-data; boundary=562436211435313341'}#, 'Authorization': 'Basic ' + userpass}
@@ -186,12 +199,21 @@ class Camera:
         print("end")
         message.ack()
 
-    async def consumer(self,  queue_name):
+    async def consumer(self,  exchange_name):
+
+
+        # Kombu Exchange
+        self.kombu_imapi_exchange = kombu.Exchange(
+            name=exchange_name,
+            type="direct",
+            delivery_mode=1
+        )
 
         # Kombu Queue
         self.kombu_imapi_queue = kombu.Queue(
-            name=queue_name,
-            #exchange=self.kombu_exchange
+            name="cam"+str(self.camera_id),
+            exchange=self.kombu_imapi_exchange,
+            routing_key="cam"
         )
 
 

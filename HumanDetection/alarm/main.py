@@ -21,15 +21,20 @@ ALARM_ID = int(os.environ["ALARM_ID"])
 RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
 RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
 RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
-RABBIT_ALARM_QUEUE = os.environ["RABBIT_ALARM_QUEUE"]
+RABBIT_ALARM_EXCHANGE = os.environ["RABBIT_ALARM_EXCHANGE"]
 
-IMAPI_URL = os.environ["RABBIT_HOST"] + ":8083" 
+IMAPI_URL = os.environ["IMAPI_HOST"] + ":8083"
+SMAPI_URL = os.environ["SMAPI_HOST"] + ":8082" 
 
-# RABBIT_MQ_URL = "localhost:5672"
-# RABBIT_MQ_USERNAME = "myuser"
-# RABBIT_MQ_PASSWORD = "mypassword"
-# RABBIT_MQ_EXCHANGE_NAME = "human-detection-exchange"
-# RABBIT_MQ_HD_QUEUE_NAME = "human-detection-queue"
+KEYCLOAK_URL = os.environ["KEYCLOAK_URL"]
+KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
+KEYCLOAK_USERNAME = os.environ["KEYCLOAK_USERNAME"]
+KEYCLOAK_PASSWORD = os.environ["KEYCLOAK_PASSWORD"]
+KEYCLOAK_SMAPI_CLIENT_SECRET = os.environ["KEYCLOAK_SMAPI_CLIENT_SECRET"]
+
+
+FLASK_PORT = os.environ["FLASK_PORT"]
+
 
 
 @app.route('/health', methods = ['GET'])
@@ -39,19 +44,26 @@ def home():
         return jsonify({'isAvailable': True})
 
 
-threading.Thread(target=lambda: app.run(debug = False, port=1235)).start()
+threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
 
 
 alarm = Alarm(
     alarm_id=ALARM_ID,
-    imapi_url= RABBIT_MQ_URL,
+    imapi_url= IMAPI_URL,
+    smapi_url= SMAPI_URL,
+    keycloak_url= KEYCLOAK_URL,
+    client_id = KEYCLOAK_SMAPI_CLIENT_ID,
+    username = KEYCLOAK_USERNAME,
+    password = KEYCLOAK_PASSWORD,
+    client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET
     )
 
 
 
 async def loopFogo():
     asyncio.create_task(alarm.consumer(
-        queue_name=RABBIT_ALARM_QUEUE,
+        broker_url=RABBIT_MQ_URL,
+        kombu_imapi_exchange=RABBIT_ALARM_EXCHANGE,
         broker_username=RABBIT_MQ_USERNAME,
         broker_password=RABBIT_MQ_PASSWORD,
         ))
@@ -67,6 +79,8 @@ except KeyboardInterrupt:
 finally:
     print("Closing Loop")
     loop.close()
+    print("Loop Closed")
+
 #asyncio.run(loopFogo())
 
 # # driver function
