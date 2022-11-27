@@ -8,6 +8,8 @@
 
 from human_detection import Human_Detection_Module
 import os
+import threading
+from flask import Flask, jsonify, request
 
 # AMQP Variables
 RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
@@ -18,6 +20,20 @@ RABBIT_MQ_QUEUE_NAME = os.environ["RABBIT_HD_QUEUE"]
 
 # OUTPUT
 OUTPUT_DIR = "intruders"
+
+FLASK_PORT = os.environ["FLASK_PORT"]
+
+# creating a Flask app
+app = Flask(__name__)
+
+@app.route('/health', methods = ['GET'])
+def home():
+    if(request.method == 'GET'):
+  
+        return jsonify({'isHealthy': True, "additionalProperties": []})
+
+
+threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
 
 human_detection_worker = Human_Detection_Module(OUTPUT_DIR)
 
