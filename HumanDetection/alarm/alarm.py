@@ -39,26 +39,26 @@ class Alarm:
         self.client_secret = client_secret
         self.smapi_data = {'client_id': self.client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': self.client_secret}
 
-
-
+    def get_property_id(self):
+        while self.propertyId == None:
+            print("getting property id")
+            token_response = requests.post(self.keycloak_url, data=self.smapi_data)
+            token_response = token_response.json()
+            access_token = "Bearer " + str(token_response["access_token"])
+            smapi_response = requests.get("http://" + self.smapi_url + "/alarms/" + str(self.alarm_id), headers={"Authorization" : str(access_token)})
+            if (smapi_response.status_code == 200):
+                smapi_response = smapi_response.json()
+                self.propertyId = smapi_response["property"] #tenho que ver o que devolve
+                print(self.propertyId)
+            else:
+                print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
+                time.sleep(10)
 
     def process_message(self, body, message):
         print("The following message has been received: %s" % body)
         #print(type(body))
         try:
             dict = json.loads(str(body))
-            if self.propertyId == None:
-                print("getting property id")
-                token_response = requests.post(self.keycloak_url, data=self.smapi_data)
-                token_response = token_response.json()
-                access_token = "Bearer " + str(token_response["access_token"])
-                smapi_response = requests.get("http://" + self.smapi_url + "/alarms/" + str(self.alarm_id), headers={"Authorization" : str(access_token)})
-                if (smapi_response.status_code==200):
-                    smapi_response = smapi_response.json()
-                    self.propertyId = smapi_response["property"] #tenho que ver o que devolve
-                    print(self.propertyId)
-                else:
-                    print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
             if dict["propertyId"]==self.propertyId:
                 self.is_on = True
                 print("Alarm is on")
@@ -69,10 +69,8 @@ class Alarm:
             print("end")
             message.ack()
 
-    
-
     async def consumer(self,  kombu_imapi_exchange,broker_username,broker_password, broker_url):
-        connection_string = f"amqp://{broker_username}:{broker_password}" \
+        connection_string = f"amqps://{broker_username}:{broker_password}" \
         f"@{broker_url}/"
 
 
@@ -98,8 +96,3 @@ class Alarm:
                 #self.consumer.consume()
                 self.kombu_connection.drain_events()
                 await asyncio.sleep(0)
-
-
-
-
-

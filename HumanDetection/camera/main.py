@@ -41,7 +41,7 @@ FLASK_PORT = os.environ["FLASK_PORT"]
 def home():
     if(request.method == 'GET'):
   
-        return jsonify({'isAvailable': True})
+        return jsonify({'isHealthy': True, "additionalProperties": []})
 
 
 threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
@@ -74,9 +74,12 @@ async def mainLoop():
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(loopFogo())
 
-loop = asyncio.get_event_loop()
+camera.get_property_id()
+
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
 try:
-    asyncio.ensure_future(mainLoop())
+    loop.create_task(mainLoop())
     loop.run_forever()
 except KeyboardInterrupt:
     pass
