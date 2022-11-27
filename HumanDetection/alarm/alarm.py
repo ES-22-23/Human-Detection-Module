@@ -72,7 +72,7 @@ class Alarm:
     
 
     async def consumer(self,  kombu_imapi_exchange,broker_username,broker_password, broker_url):
-        connection_string = f"amqp://{broker_username}:{broker_password}" \
+        connection_string = f"amqps://{broker_username}:{broker_password}" \
         f"@{broker_url}/"
 
 

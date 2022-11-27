@@ -70,16 +70,17 @@ async def loopFogo():
 
 
 
-loop = asyncio.get_event_loop()
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
 try:
-    asyncio.ensure_future(loopFogo())
+    loop.create_task(loopFogo())
     loop.run_forever()
 except KeyboardInterrupt:
     pass
 finally:
     print("Closing Loop")
     loop.close()
-    print("Loop Closed")
+print("Final")
 
 #asyncio.run(loopFogo())
 

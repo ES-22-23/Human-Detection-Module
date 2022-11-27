@@ -47,7 +47,7 @@ class Camera:
     def attach_to_message_broker(self, broker_url, broker_username,
                                  broker_password, exchange_name, queue_name):
         # Create Connection String
-        connection_string = f"amqp://{broker_username}:{broker_password}" \
+        connection_string = f"amqps://{broker_username}:{broker_password}" \
             f"@{broker_url}/"
 
         print(connection_string)
