@@ -74,6 +74,8 @@ async def mainLoop():
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(loopFogo())
 
+camera.get_property_id()
+
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 try:
