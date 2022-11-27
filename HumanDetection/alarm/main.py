@@ -35,17 +35,14 @@ KEYCLOAK_SMAPI_CLIENT_SECRET = os.environ["KEYCLOAK_SMAPI_CLIENT_SECRET"]
 
 FLASK_PORT = os.environ["FLASK_PORT"]
 
-
-
 @app.route('/health', methods = ['GET'])
 def home():
     if(request.method == 'GET'):
   
-        return jsonify({'isAvailable': True})
+        return jsonify({'isHealthy': True, "additionalProperties": []})
 
 
 threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
-
 
 alarm = Alarm(
     alarm_id=ALARM_ID,
@@ -58,8 +55,6 @@ alarm = Alarm(
     client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET
     )
 
-
-
 async def loopFogo():
     asyncio.create_task(alarm.consumer(
         broker_url=RABBIT_MQ_URL,
@@ -68,7 +63,7 @@ async def loopFogo():
         broker_password=RABBIT_MQ_PASSWORD,
         ))
 
-
+alarm.get_property_id()
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -88,5 +83,3 @@ print("Final")
 # if __name__ == '__main__':
   
 #     threading.Thread(target=lambda: app.run(debug = False, port=1234)).start()
-    
-

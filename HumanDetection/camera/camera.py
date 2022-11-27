@@ -5,6 +5,7 @@
 # @Last Modified by:   Rafael Direito
 # @Last Modified time: 2022-10-06 12:02:59
 
+import time
 import cv2
 import imutils
 import kombu
@@ -77,7 +78,20 @@ class Camera:
         self.kombu_queue.declare()
 
 
-
+    def get_property_id(self):
+        while self.propertyId == None:
+            print("getting property id")
+            token_response = requests.post(self.keycloak_url, data=self.smapi_data)
+            token_response = token_response.json()
+            access_token = "Bearer " + str(token_response["access_token"])
+            smapi_response = requests.get("http://" + self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(access_token)})
+            if (smapi_response.status_code == 200):
+                smapi_response = smapi_response.json()
+                self.propertyId = smapi_response["property"] #tenho que ver o que devolve
+                print(self.propertyId)
+            else:
+                print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
+                time.sleep(10)
 
 
     async def transmit_video(self, video_path):
@@ -149,24 +163,10 @@ class Camera:
             frame_count += 1
             await asyncio.sleep(0)
 
-
-
     def process_message(self, body, message):
         print("The following message has been received: %s" % body)
         #print(type(body))
         dict = json.loads(str(body))
-        if self.propertyId == None:
-            print("getting property id")
-            token_response = requests.post(self.keycloak_url, data=self.smapi_data)
-            token_response = token_response.json()
-            access_token = "Bearer " + str(token_response["access_token"])
-            smapi_response = requests.get("http://" + self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(access_token)})
-            if (smapi_response.status_code == 200):
-                smapi_response = smapi_response.json()
-                self.propertyId = smapi_response["property"] #tenho que ver o que devolve
-                print(self.propertyId)
-            else:
-                print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
 
         if dict["cameraId"] == self.camera_id and self.propertyId != None:
             splitTimestamp = dict["timestamp"].split(" ")[-1].split(".")[0].split(":")
@@ -224,15 +224,3 @@ class Camera:
                 #self.consumer.consume()
                 self.kombu_connection.drain_events()
                 await asyncio.sleep(0)
-
-
-
-
-
-
-
-""" 
-
-
-
-"""
