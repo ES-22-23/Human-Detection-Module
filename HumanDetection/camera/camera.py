@@ -43,7 +43,7 @@ class Camera:
 
         token_response = requests.post(self.keycloak_url, data=self.smapi_data)
         token_response = token_response.json()
-        print(token_response)
+        #print(token_response)
         self.access_token = "Bearer " + str(token_response["access_token"])
         public_ip = requests.get('https://api.ipify.org').content.decode('utf8')
         private_ip = socket.gethostbyname(socket.gethostname())
@@ -59,8 +59,8 @@ class Camera:
             }
         }
         url =service_registry_url+ "registry/register"
-        self.camera_id = requests.post(url, json=data, headers={"Authorization" : str(self.access_token)})#.json()["serviceUniqueId"]
-        print(self.camera_id.text)
+        self.camera_id = requests.post(url, json=data, headers={"Authorization" : str(self.access_token)}).json()["serviceUniqueId"]
+        print(self.camera_id)
         #print(self.camera_id.text)
 
 
@@ -104,10 +104,7 @@ class Camera:
     def get_property_id(self):
         while self.propertyId == None:
             print("getting property id")
-            token_response = requests.post(self.keycloak_url, data=self.smapi_data)
-            token_response = token_response.json()
-            access_token = "Bearer " + str(token_response["access_token"])
-            smapi_response = requests.get("http://" + self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(access_token)})
+            smapi_response = requests.get(self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(self.access_token)})
             if (smapi_response.status_code == 200):
                 smapi_response = smapi_response.json()
                 self.propertyId = smapi_response["property"] #tenho que ver o que devolve
@@ -190,21 +187,6 @@ class Camera:
         print("The following message has been received: %s" % body)
         #print(type(body))
         dict = json.loads(str(body))
-        if self.propertyId == None:
-            print("getting property id")
-            # token_response = requests.post(self.keycloak_url, data=self.smapi_data)
-            # token_response = token_response.json()
-            # #print(token_response)
-            # access_token = "Bearer " + str(token_response["access_token"])
-            url =self.smapi_url + "/cameras/" + str(self.camera_id)
-            print(url)
-            smapi_response = requests.get(url, headers={"Authorization" : str(self.access_token)})
-            if (smapi_response.status_code == 200):
-                smapi_response = smapi_response.json()
-                self.propertyId = smapi_response["property"] #tenho que ver o que devolve
-                print(self.propertyId)
-            else:
-                print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
 
         if dict["cameraId"] == self.camera_id and self.propertyId != None:
             print("getting property id")
