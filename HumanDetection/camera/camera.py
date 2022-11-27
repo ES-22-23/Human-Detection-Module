@@ -15,7 +15,7 @@ import requests
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import os
 import asyncio
-
+import socket
 
 class Camera:
 
@@ -25,8 +25,7 @@ class Camera:
     kombu_producer = None
     kombu_queue = None
 
-    def __init__(self, frames_per_second_to_process,imapi_url,smapi_url, keycloak_url, client_id, username, password, client_secret, camera_id=-1):
-        self.camera_id = camera_id
+    def __init__(self, frames_per_second_to_process,imapi_url,smapi_url, keycloak_url, client_id, username, password, client_secret, service_registry_url):
         self.frames_per_second_to_process = frames_per_second_to_process
         self.imapi_url = imapi_url
         self.smapi_url = smapi_url
@@ -40,6 +39,30 @@ class Camera:
         self.grant_type = "password"
         self.client_secret = client_secret
         self.smapi_data = {'client_id': self.client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': self.client_secret}
+
+
+        token_response = requests.post(self.keycloak_url, data=self.smapi_data)
+        token_response = token_response.json()
+        #print(token_response)
+        self.access_token = "Bearer " + str(token_response["access_token"])
+        public_ip = requests.get('https://api.ipify.org').content.decode('utf8')
+        private_ip = socket.gethostbyname(socket.gethostname())
+
+        data = {
+            "serviceName": "Camera",
+            "serviceType": "CAMERA",
+            "serviceHealthEndpoint": "/health",
+            "serviceProtocol": "HTTP",
+            "serviceAddress": {
+                "public": public_ip,
+                "private": private_ip
+            }
+        }
+        url =service_registry_url+ "registry/register"
+        self.camera_id = requests.post(url, json=data, headers={"Authorization" : str(self.access_token)}).json()["serviceUniqueId"]
+        print(self.camera_id)
+        #print(self.camera_id.text)
+
 
     # def disc_message(self, disc_url, ):
     #     response = requests.get(disc_url,self.property).json()
@@ -81,10 +104,7 @@ class Camera:
     def get_property_id(self):
         while self.propertyId == None:
             print("getting property id")
-            token_response = requests.post(self.keycloak_url, data=self.smapi_data)
-            token_response = token_response.json()
-            access_token = "Bearer " + str(token_response["access_token"])
-            smapi_response = requests.get("http://" + self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(access_token)})
+            smapi_response = requests.get(self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(self.access_token)})
             if (smapi_response.status_code == 200):
                 smapi_response = smapi_response.json()
                 self.propertyId = smapi_response["property"] #tenho que ver o que devolve
@@ -169,6 +189,7 @@ class Camera:
         dict = json.loads(str(body))
 
         if dict["cameraId"] == self.camera_id and self.propertyId != None:
+            print("getting property id")
             splitTimestamp = dict["timestamp"].split(" ")[-1].split(".")[0].split(":")
             timestamp = int(splitTimestamp[1])%10*60+int(splitTimestamp[-1])
             startTime= timestamp-180 
@@ -185,11 +206,11 @@ class Camera:
             #userpass = b64encode(b"<username>:<password>").decode("ascii")
             # Check if the video exists
             #headers = {'Content-type':'multipart/form-data; boundary=562436211435313341'}#, 'Authorization': 'Basic ' + userpass}
-            url = "http://"+self.imapi_url+"/videoClips"
+            url = self.imapi_url+"/videoClips"
             print(url)
             #print(files["document"].peek())
             try:
-                response = requests.post(url, files=files, params=params)
+                response = requests.post(url, files=files, params=params, headers={"Authorization" : str(self.access_token)})
                 #print(response.text)
                 print("Request status: %s" % response.status_code)
             finally:
@@ -224,3 +245,6 @@ class Camera:
                 #self.consumer.consume()
                 self.kombu_connection.drain_events()
                 await asyncio.sleep(0)
+
+
+
