@@ -40,6 +40,9 @@ class Alarm:
         self.smapi_data = {'client_id': self.client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': self.client_secret}
 
 
+        
+
+
 
 
     def process_message(self, body, message):

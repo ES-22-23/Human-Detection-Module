@@ -15,7 +15,6 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 # CAMERA VARIABLES
-CAMERA_ID = int(os.environ["CAM_ID"])
 NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
 
 # AMQP Variables
@@ -26,8 +25,9 @@ RABBIT_MQ_CAM_EXCHANGE_NAME = os.environ["RABBIT_CAM_EXCHANGE"]
 RABBIT_MQ_HD_QUEUE_NAME = os.environ["RABBIT_HD_QUEUE"]
 RABBIT_MQ_HD_EXCHANGE_NAME = os.environ["RABBIT_HD_EXCHANGE_NAME"]
 
-IMAPI_URL = os.environ["IMAPI_HOST"] + ":8083"
-SMAPI_URL = os.environ["SMAPI_HOST"] + ":8082" 
+IMAPI_URL = "http://" + os.environ["IMAPI_HOST"] + ":8083"
+SMAPI_URL = "http://"+ os.environ["SMAPI_HOST"] + ":8082" 
+SERVICE_REGISTRY_URL = "http://"+ os.environ["SERVICE_REGISTRY_HOST"] + ":9090/" 
 
 KEYCLOAK_URL = os.environ["KEYCLOAK_URL"]
 KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
@@ -47,7 +47,6 @@ def home():
 threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
 
 camera = Camera(
-    camera_id=CAMERA_ID,
     frames_per_second_to_process=NUM_FRAMES_PER_SECOND_TO_PROCESS,
     imapi_url= IMAPI_URL,
     smapi_url= SMAPI_URL,
@@ -55,7 +54,8 @@ camera = Camera(
     client_id = KEYCLOAK_SMAPI_CLIENT_ID,
     username = KEYCLOAK_USERNAME,
     password = KEYCLOAK_PASSWORD,
-    client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET
+    client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET,
+    service_registry_url=SERVICE_REGISTRY_URL
     )
 
 camera.attach_to_message_broker(
