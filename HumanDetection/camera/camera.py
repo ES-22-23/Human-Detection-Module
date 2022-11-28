@@ -15,7 +15,7 @@ import requests
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import os
 import asyncio
-import socket
+#import socket
 
 class Camera:
 
@@ -46,7 +46,7 @@ class Camera:
         #print(token_response)
         self.access_token = "Bearer " + str(token_response["access_token"])
         public_ip = requests.get('https://api.ipify.org').content.decode('utf8')
-        private_ip = socket.gethostbyname(socket.gethostname())
+        private_ip = "10.0.10.2" #socket.gethostbyname(socket.gethostname())
 
         data = {
             "serviceName": "Camera",
