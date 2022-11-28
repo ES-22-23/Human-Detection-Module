@@ -4,7 +4,6 @@ FROM python:latest
 
 # ARGS
 
-ENV CAM_ID=1
 
 ARG FLASK_PORT
 ENV FLASK_PORT=1234
@@ -28,8 +27,8 @@ ENV SERVICE_REGISTRY_HOST=scss.hgsoft.me
 ENV KEYCLOAK_URL=https://auth.hgsoft.me/realms/keycloak-react-auth/protocol/openid-connect/token
 
 ENV KEYCLOAK_SMAPI_CLIENT_ID=sites-management-API
-ENV KEYCLOAK_USERNAME=testadmin
-ENV KEYCLOAK_PASSWORD=adminPass
+ENV KEYCLOAK_USERNAME="camera_user"
+ENV KEYCLOAK_PASSWORD="camera_user"
 ENV KEYCLOAK_SMAPI_CLIENT_SECRET=TiRdFEZFBNfJ92tq7iaHlP2u0y5dQ5le
 
 

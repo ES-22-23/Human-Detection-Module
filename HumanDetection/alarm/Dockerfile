@@ -3,8 +3,9 @@ FROM python:latest
 
 
 # ARGS
-ENV ALARM_ID=1
 
+
+ARG FLASK_PORT
 ENV FLASK_PORT=1235
 
 #Env variables
@@ -14,15 +15,17 @@ ENV RABBIT_USER="admin"
 ENV RABBIT_PASSWORD="EHgxSz7J7noeH2"
 ENV RABBIT_ALARM_EXCHANGE="activate_alarm"
 
-ENV IMAPI_HOST=localhost
-ENV SMAPI_HOST=localhost
+
+ENV IMAPI_HOST=scss.hgsoft.me
+ENV SMAPI_HOST=scss.hgsoft.me
+ENV SERVICE_REGISTRY_HOST=scss.hgsoft.me
 
 ENV KEYCLOAK_URL=https://auth.hgsoft.me/realms/keycloak-react-auth/protocol/openid-connect/token
 
 ENV KEYCLOAK_SMAPI_CLIENT_ID=sites-management-API
-ENV KEYCLOAK_USERNAME=testadmin
-ENV KEYCLOAK_PASSWORD=adminPass
-ENV KEYCLOAK_SMAPI_CLIENT_SECRET=ytbb5vTuOJbWGzDvtq4jrwrnvJQEhjJ5
+ENV KEYCLOAK_USERNAME="alarm_user"
+ENV KEYCLOAK_PASSWORD="alarm_user"
+ENV KEYCLOAK_SMAPI_CLIENT_SECRET=TiRdFEZFBNfJ92tq7iaHlP2u0y5dQ5le
 
 
 # Any working directory can be chosen as per choice like '/' or '/home' etc
@@ -33,10 +36,6 @@ WORKDIR /
 COPY main.py ./
 COPY requirements.txt requirements.txt
 
-
-
-RUN apt-get update
-RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install -r requirements.txt
