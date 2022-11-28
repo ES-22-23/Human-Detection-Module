@@ -14,8 +14,6 @@ from flask import Flask, jsonify, request
 # creating a Flask app
 app = Flask(__name__)
 
-# ALARM VARIABLES
-ALARM_ID = int(os.environ["ALARM_ID"])
 
 # AMQP Variables
 RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
@@ -23,8 +21,8 @@ RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
 RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
 RABBIT_ALARM_EXCHANGE = os.environ["RABBIT_ALARM_EXCHANGE"]
 
-IMAPI_URL = os.environ["IMAPI_HOST"] + ":8083"
-SMAPI_URL = os.environ["SMAPI_HOST"] + ":8082" 
+SMAPI_URL = "http://"+ os.environ["SMAPI_HOST"] + ":8082" 
+SERVICE_REGISTRY_URL = "http://"+ os.environ["SERVICE_REGISTRY_HOST"] + ":9090/" 
 
 KEYCLOAK_URL = os.environ["KEYCLOAK_URL"]
 KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
@@ -45,14 +43,13 @@ def home():
 threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
 
 alarm = Alarm(
-    alarm_id=ALARM_ID,
-    imapi_url= IMAPI_URL,
     smapi_url= SMAPI_URL,
     keycloak_url= KEYCLOAK_URL,
     client_id = KEYCLOAK_SMAPI_CLIENT_ID,
     username = KEYCLOAK_USERNAME,
     password = KEYCLOAK_PASSWORD,
-    client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET
+    client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET,
+    service_registry_url=SERVICE_REGISTRY_URL
     )
 
 async def loopFogo():

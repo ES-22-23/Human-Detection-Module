@@ -7,9 +7,6 @@
 .AppleDouble
 .LSOverride
 
-
-./HumanDetection/alarm/Dockerfile
-./HumanDetection/camera/Dockerfile
 # Icon must end with two \r
 Icon
 
