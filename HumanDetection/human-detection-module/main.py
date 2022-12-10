@@ -33,7 +33,7 @@ def home():
         return jsonify({'isHealthy': True, "additionalProperties": []})
 
 
-threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
+threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT, host="0.0.0.0")).start()
 
 human_detection_worker = Human_Detection_Module(OUTPUT_DIR)
 

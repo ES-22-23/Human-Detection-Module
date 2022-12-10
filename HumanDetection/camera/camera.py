@@ -76,7 +76,7 @@ class Camera:
 
         print(connection_string)
         # Kombu Connection
-        self.kombu_connection = kombu.Connection(connection_string)
+        self.kombu_connection = kombu.Connection(connection_string, ssl=True)
         self.kombu_channel = self.kombu_connection.channel()
 
         # Kombu Exchange
@@ -130,6 +130,7 @@ class Camera:
         print('Detecting people...')
         time_now = datetime.datetime.now()
 
+        counter = 1
         frame_count = 0
         frame_id = 0
         while video.isOpened():
@@ -168,20 +169,25 @@ class Camera:
                             "frame_id": frame_id
                         }
                     )
-                    # print(f"[Camera {self.camera_id}] Sent a frame to " +
-                    #       "the human-detection module " +
-                    #       f"(frame_number={frame_count}, " +
-                    #       f"frame_timestamp={time_now})")
+                    print(f"[Camera {self.camera_id}] Sent a frame to " +
+                          "the human-detection module " +
+                          f"(frame_number={frame_count}, " +
+                          f"frame_timestamp={time_now})")
 
                     frame_id += 1
                     #key = cv2.waitKey(1)
                     #if key == ord('q'):
                     #    break
+                    if counter % 100 == 0:
+                        await asyncio.sleep(0)
+                    counter += 1
+
             else:
                 break
 
             frame_count += 1
             await asyncio.sleep(0)
+
 
     def process_message(self, body, message):
         print("The following message has been received: %s" % body)
