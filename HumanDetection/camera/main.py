@@ -18,6 +18,7 @@ app = Flask(__name__)
 NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
 
 # AMQP Variables
+
 RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
 RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
 RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
@@ -43,8 +44,7 @@ def home():
   
         return jsonify({'isHealthy': True, "additionalProperties": []})
 
-
-threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
+threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT, host="0.0.0.0")).start()
 
 camera = Camera(
     frames_per_second_to_process=NUM_FRAMES_PER_SECOND_TO_PROCESS,
