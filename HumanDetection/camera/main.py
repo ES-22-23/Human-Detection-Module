@@ -18,11 +18,6 @@ app = Flask(__name__)
 NUM_FRAMES_PER_SECOND_TO_PROCESS = 2
 
 # AMQP Variables
-RABBIT_MQ_URL = "localhost:5672"
-RABBIT_MQ_USERNAME = "myuser"
-RABBIT_MQ_PASSWORD = "mypassword"
-RABBIT_MQ_EXCHANGE_NAME = "human-detection-exchange"
-RABBIT_MQ_QUEUE_NAME = "human-detection-queue"
 
 RABBIT_MQ_URL = os.environ["RABBIT_HOST"]+ ":" +str(os.environ["RABBIT_PORT"])
 RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
