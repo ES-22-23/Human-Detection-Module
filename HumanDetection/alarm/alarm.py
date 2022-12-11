@@ -64,7 +64,7 @@ class Alarm:
     def get_property_id(self):
         while self.propertyId == None:
             print("getting property id")
-            self.propertyId = 10
+            #self.propertyId = 10
             token_response = requests.post(self.keycloak_url, data=self.keycloack_json)
             token_response = token_response.json()
             access_token = "Bearer " + str(token_response["access_token"])

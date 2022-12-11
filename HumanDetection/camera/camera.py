@@ -259,7 +259,6 @@ class Camera:
                 #self.consumer.consume()
                 self.kombu_connection.drain_events()
                 await asyncio.sleep(0)
-                print("after sleep")
 
 
 
