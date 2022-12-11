@@ -41,12 +41,12 @@ class Alarm:
         token_response = token_response.json()
         #print(token_response)
         access_token = "Bearer " + str(token_response["access_token"])
-        public_ip = requests.get('https://api.ipify.org').content.decode('utf8')
+        public_ip = requests.get('https://v4.ident.me/').content.decode('utf8')
         private_ip = "10.0.10.2" #socket.gethostbyname(socket.gethostname())
 
         data = {
-            "serviceName": "Camera",
-            "serviceType": "CAMERA",
+            "serviceName": "Alarm",
+            "serviceType": "ALARM",
             "serviceHealthEndpoint": "/health",
             "serviceProtocol": "HTTP",
             "serviceAddress": {

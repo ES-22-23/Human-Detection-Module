@@ -47,7 +47,7 @@ def ringing():
         return jsonify({'isringing': alarm.is_on})
 
 
-threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()
+threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT, host="0.0.0.0")).start()
 
 alarm = Alarm(
     smapi_url= SMAPI_URL,

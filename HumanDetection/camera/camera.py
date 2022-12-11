@@ -45,7 +45,8 @@ class Camera:
         token_response = token_response.json()
         #print(token_response)
         self.access_token = "Bearer " + str(token_response["access_token"])
-        public_ip = requests.get('https://api.ipify.org').content.decode('utf8')
+        public_ip = requests.get('https://v4.ident.me/').content.decode('utf8')
+        print(public_ip)
         private_ip = "10.0.10.2" #socket.gethostbyname(socket.gethostname())
 
         data = {
