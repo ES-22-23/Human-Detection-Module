@@ -45,8 +45,8 @@ class Alarm:
         private_ip = "10.0.10.2" #socket.gethostbyname(socket.gethostname())
 
         data = {
-            "serviceName": "Camera",
-            "serviceType": "CAMERA",
+            "serviceName": "Alarm",
+            "serviceType": "ALARM",
             "serviceHealthEndpoint": "/health",
             "serviceProtocol": "HTTP",
             "serviceAddress": {
