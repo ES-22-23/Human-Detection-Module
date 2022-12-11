@@ -21,8 +21,8 @@ RABBIT_MQ_USERNAME = os.environ["RABBIT_USER"]
 RABBIT_MQ_PASSWORD = os.environ["RABBIT_PASSWORD"]
 RABBIT_ALARM_EXCHANGE = os.environ["RABBIT_ALARM_EXCHANGE"]
 
-SMAPI_URL = "http://"+ os.environ["SMAPI_HOST"] + ":8082" 
-SERVICE_REGISTRY_URL = "http://"+ os.environ["SERVICE_REGISTRY_HOST"] + ":9090/" 
+SMAPI_URL =  os.environ["SMAPI_HOST"] 
+SERVICE_REGISTRY_URL =  os.environ["SERVICE_REGISTRY_HOST"] 
 
 KEYCLOAK_URL = os.environ["KEYCLOAK_URL"]
 KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
@@ -38,6 +38,13 @@ def home():
     if(request.method == 'GET'):
   
         return jsonify({'isHealthy': True, "additionalProperties": []})
+
+
+@app.route('/isringing', methods = ['GET'])
+def ringing():
+    if(request.method == 'GET'):
+  
+        return jsonify({'isringing': alarm.is_on})
 
 
 threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT)).start()

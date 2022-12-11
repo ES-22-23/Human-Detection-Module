@@ -58,8 +58,10 @@ class Camera:
                 "private": private_ip
             }
         }
-        url =service_registry_url+ "registry/register"
+        url =service_registry_url+ "/registry/register"
+        print(url)
         self.camera_id = requests.post(url, json=data, headers={"Authorization" : str(self.access_token)}).json()["serviceUniqueId"]
+        #self.camera_id = "111cc11-165a-445a-b062-9b7a16195dd6"
         print(self.camera_id)
         #print(self.camera_id.text)
 
@@ -104,6 +106,7 @@ class Camera:
     def get_property_id(self):
         while self.propertyId == None:
             print("getting property id")
+            #self.propertyId=10
             smapi_response = requests.get(self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(self.access_token)})
             if (smapi_response.status_code == 200):
                 smapi_response = smapi_response.json()
@@ -178,15 +181,19 @@ class Camera:
                     #key = cv2.waitKey(1)
                     #if key == ord('q'):
                     #    break
+                    #print("before if")
                     if counter % 100 == 0:
+                        print("before sleep")
                         await asyncio.sleep(0)
                     counter += 1
-
             else:
                 break
-
+            
             frame_count += 1
             await asyncio.sleep(0)
+
+            
+        print("transmit_video_end")
 
 
     def process_message(self, body, message):
@@ -248,9 +255,11 @@ class Camera:
         with kombu.Consumer(self.kombu_connection, queues=self.kombu_imapi_queue, callbacks=[self.process_message],accept=["text/plain"]):
 
             while True:
+                print("consuming...")
                 #self.consumer.consume()
                 self.kombu_connection.drain_events()
                 await asyncio.sleep(0)
+
 
 
 
