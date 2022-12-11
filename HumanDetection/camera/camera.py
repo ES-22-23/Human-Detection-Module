@@ -60,7 +60,7 @@ class Camera:
         }
         url =service_registry_url+ "/registry/register"
         print(url)
-        self.camera_id = requests.post(url, json=data, headers={"Authorization" : str(self.access_token)})#.json()["serviceUniqueId"]
+        self.camera_id = requests.post(url, json=data, headers={"Authorization" : str(self.access_token)}).json()["serviceUniqueId"]
         #self.camera_id = "111cc11-165a-445a-b062-9b7a16195dd6"
         print(self.camera_id)
         #print(self.camera_id.text)
