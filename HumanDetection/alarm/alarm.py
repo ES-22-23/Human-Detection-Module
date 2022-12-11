@@ -56,7 +56,7 @@ class Alarm:
         }
         url =service_registry_url+ "/registry/register"
         print(url)
-        self.alarm_id = print(requests.post(url, json=data, headers={"Authorization" : str(access_token)}))#.json()["serviceUniqueId"]
+        self.alarm_id = requests.post(url, json=data, headers={"Authorization" : str(access_token)}).json()["serviceUniqueId"]
         #self.alarm_id = "e988df0c-6a23-49e5-a6a2-9b714fbaf4da"
         print(self.alarm_id)
 
