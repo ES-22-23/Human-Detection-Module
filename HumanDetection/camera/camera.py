@@ -31,7 +31,6 @@ class Camera:
         self.smapi_url = smapi_url
         self.keycloak_url = keycloak_url
         self.propertyId = None
-
         #needed for keycloak
         self.client_id = client_id
         self.username = username
@@ -39,12 +38,14 @@ class Camera:
         self.grant_type = "password"
         self.client_secret = client_secret
         self.smapi_data = {'client_id': self.client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': self.client_secret}
+        #self.transmit_video_bool = False
 
-
+        print("before getting token")
         token_response = requests.post(self.keycloak_url, data=self.smapi_data)
         token_response = token_response.json()
-        #print(token_response)
+        print(token_response)
         self.access_token = "Bearer " + str(token_response["access_token"])
+        print("before getting pub ip")
         public_ip = requests.get('https://v4.ident.me/').content.decode('utf8')
         print(public_ip)
         private_ip = "10.0.10.2" #socket.gethostbyname(socket.gethostname())
@@ -61,8 +62,8 @@ class Camera:
         }
         url =service_registry_url+ "/registry/register"
         print(url)
-        self.camera_id = requests.post(url, json=data, headers={"Authorization" : str(self.access_token)}).json()["serviceUniqueId"]
-        #self.camera_id = "111cc11-165a-445a-b062-9b7a16195dd6"
+        #self.camera_id = requests.post(url, json=data, headers={"Authorization" : "Bearer "+str(self.access_token)}).json()["serviceUniqueId"]
+        self.camera_id = "111cc11-165a-445a-b062-9b7a16195dd6"
         print(self.camera_id)
         #print(self.camera_id.text)
 
@@ -107,15 +108,15 @@ class Camera:
     def get_property_id(self):
         while self.propertyId == None:
             print("getting property id")
-            #self.propertyId=10
-            smapi_response = requests.get(self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(self.access_token)})
-            if (smapi_response.status_code == 200):
-                smapi_response = smapi_response.json()
-                self.propertyId = smapi_response["property"] #tenho que ver o que devolve
-                print(self.propertyId)
-            else:
-                print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
-                time.sleep(10)
+            self.propertyId=10
+            # smapi_response = requests.get(self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(self.access_token)})
+            # if (smapi_response.status_code == 200):
+            #     smapi_response = smapi_response.json()
+            #     self.propertyId = smapi_response["property"] #tenho que ver o que devolve
+            #     print(self.propertyId)
+            # else:
+            #     print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
+            #     time.sleep(10)
 
 
     async def transmit_video(self, video_path):
@@ -182,7 +183,6 @@ class Camera:
                     #key = cv2.waitKey(1)
                     #if key == ord('q'):
                     #    break
-                    #print("before if")
                     if counter % 100 == 0:
                         print("before sleep")
                         await asyncio.sleep(0)
@@ -191,10 +191,10 @@ class Camera:
                 break
             
             frame_count += 1
-            await asyncio.sleep(0)
-
-            
+            #await asyncio.sleep(0)
+        #self.transmit_video_bool=True
         print("transmit_video_end")
+        await asyncio.sleep(0) 
 
 
     def process_message(self, body, message):
@@ -224,9 +224,10 @@ class Camera:
             print(url)
             #print(files["document"].peek())
             try:
-                response = requests.post(url, files=files, params=params, headers={"Authorization" : str(self.access_token)})
+                #response = requests.post(url, files=files, params=params, headers={"Authorization" : str(self.access_token)})
+                print("no sending video")
                 #print(response.text)
-                print("Request status: %s" % response.status_code)
+                #print("Request status: %s" % response.status_code)
             finally:
                 os.remove("temp.mp4")
                 print("Removing temp.mp4")
@@ -258,8 +259,14 @@ class Camera:
             while True:
                 print("consuming...")
                 #self.consumer.consume()
-                self.kombu_connection.drain_events()
-                await asyncio.sleep(0)
+                try:
+                    self.kombu_connection.drain_events(timeout=1)
+
+                except TimeoutError:
+                    print("No message received")
+                finally:
+                    await asyncio.sleep(0)
+
 
 
 

@@ -46,6 +46,7 @@ def home():
 
 threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT, host="0.0.0.0")).start()
 
+print("initialize camera")
 camera = Camera(
     frames_per_second_to_process=NUM_FRAMES_PER_SECOND_TO_PROCESS,
     imapi_url= IMAPI_URL,
@@ -58,6 +59,8 @@ camera = Camera(
     service_registry_url=SERVICE_REGISTRY_URL
     )
 
+print("attach_to_message_broker")
+
 camera.attach_to_message_broker(
     broker_url=RABBIT_MQ_URL,
     broker_username=RABBIT_MQ_USERNAME,
@@ -67,12 +70,13 @@ camera.attach_to_message_broker(
     )
 
 async def mainLoop():
-    send_video = asyncio.create_task(camera.consumer(exchange_name=RABBIT_MQ_CAM_EXCHANGE_NAME))
+    asyncio.create_task(camera.transmit_video("samples/people-detection.mp4"))
+    asyncio.create_task(camera.consumer(exchange_name=RABBIT_MQ_CAM_EXCHANGE_NAME))
 
-    await camera.transmit_video("samples/people-detection.mp4")
 
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(loopFogo())
+print("get property id")
 
 camera.get_property_id()
 
