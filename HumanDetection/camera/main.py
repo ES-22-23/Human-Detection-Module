@@ -31,10 +31,13 @@ SMAPI_URL =  os.environ["SMAPI_HOST"]
 SERVICE_REGISTRY_URL =  os.environ["SERVICE_REGISTRY_HOST"] 
 
 KEYCLOAK_URL = os.environ["KEYCLOAK_URL"]
-KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
 KEYCLOAK_USERNAME = os.environ["KEYCLOAK_USERNAME"]
 KEYCLOAK_PASSWORD = os.environ["KEYCLOAK_PASSWORD"]
+KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
 KEYCLOAK_SMAPI_CLIENT_SECRET = os.environ["KEYCLOAK_SMAPI_CLIENT_SECRET"]
+
+KEYCLOAK_REGISTRY_CLIENT_ID = os.environ["KEYCLOAK_REGISTRY_CLIENT_ID"]
+KEYCLOAK_REGISTRY_CLIENT_SECRET = os.environ["KEYCLOAK_REGISTRY_CLIENT_SECRET"]
 
 FLASK_PORT = os.environ["FLASK_PORT"]
 
@@ -44,7 +47,6 @@ def home():
   
         return jsonify({'isHealthy': True, "additionalProperties": []})
 
-threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT, host="0.0.0.0")).start()
 
 print("initialize camera")
 camera = Camera(
@@ -52,11 +54,11 @@ camera = Camera(
     imapi_url= IMAPI_URL,
     smapi_url= SMAPI_URL,
     keycloak_url= KEYCLOAK_URL,
-    client_id = KEYCLOAK_SMAPI_CLIENT_ID,
+    registry_client_id = KEYCLOAK_REGISTRY_CLIENT_ID,
     username = KEYCLOAK_USERNAME,
     password = KEYCLOAK_PASSWORD,
-    client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET,
-    service_registry_url=SERVICE_REGISTRY_URL
+    registry_client_secret = KEYCLOAK_REGISTRY_CLIENT_SECRET,
+    service_registry_url=SERVICE_REGISTRY_URL,
     )
 
 print("attach_to_message_broker")
@@ -69,16 +71,17 @@ camera.attach_to_message_broker(
     queue_name=RABBIT_MQ_HD_QUEUE_NAME,
     )
 
+threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT, host="0.0.0.0",threaded=True)).start()
 async def mainLoop():
-    asyncio.create_task(camera.transmit_video("samples/people-detection.mp4"))
     asyncio.create_task(camera.consumer(exchange_name=RABBIT_MQ_CAM_EXCHANGE_NAME))
+    await camera.transmit_video("samples/people-detection.mp4")
 
 
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(loopFogo())
 print("get property id")
 
-camera.get_property_id()
+camera.get_property_id(KEYCLOAK_SMAPI_CLIENT_ID,KEYCLOAK_SMAPI_CLIENT_SECRET)
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
