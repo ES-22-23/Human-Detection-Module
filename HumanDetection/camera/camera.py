@@ -63,9 +63,9 @@ class Camera:
         }
         url =service_registry_url+ "/registry/register"
         print(url)
-        self.camera_id = requests.post(url, json=data, headers={"Authorization" : "Bearer "+str(access_token)})#.json()["serviceUniqueId"]
+        self.camera_id = requests.post(url, json=data, headers={"Authorization" : "Bearer "+str(access_token)}).json()["serviceUniqueId"]
 
-        self.camera_id="36e25c8c-165a-445a-b062-9b7a16195dd6"
+        #self.camera_id="36e25c8c-165a-445a-b062-9b7a16195dd6"
         print(self.camera_id)
         #print(self.camera_id.text)
 
@@ -110,22 +110,21 @@ class Camera:
     def get_property_id(self,smapi_client_id, smapi_client_secret):
         while self.propertyId == None:
             print("getting property id")
-            self.propertyId=10
             smapi_data = {'client_id': smapi_client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': smapi_client_secret}
             print(smapi_data)
             token_response = requests.post(self.keycloak_url, data=smapi_data)
             token_response = token_response.json()
             access_token= "Bearer " + str(token_response["access_token"])
             smapi_response = requests.get(self.smapi_url + "/cameras/" + str(self.camera_id), headers={"Authorization" : str(access_token)})
-            self.propertyId=10
+            #self.propertyId=10
 
-            # if (smapi_response.status_code == 200):
-            #     smapi_response = smapi_response.json()
-            #     self.propertyId = smapi_response["property"] #tenho que ver o que devolve
-            #     print(self.propertyId)
-            # else:
-            #     print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
-            #     time.sleep(10)
+            if (smapi_response.status_code == 200):
+                smapi_response = smapi_response.json()
+                self.propertyId = smapi_response["property"] #tenho que ver o que devolve
+                print(self.propertyId)
+            else:
+                print("Request Error. HTTP Error code: " + str(smapi_response.status_code))
+                time.sleep(10)
 
 
     async def transmit_video(self, video_path):
