@@ -38,6 +38,8 @@ KEYCLOAK_SMAPI_CLIENT_SECRET = os.environ["KEYCLOAK_SMAPI_CLIENT_SECRET"]
 
 KEYCLOAK_REGISTRY_CLIENT_ID = os.environ["KEYCLOAK_REGISTRY_CLIENT_ID"]
 KEYCLOAK_REGISTRY_CLIENT_SECRET = os.environ["KEYCLOAK_REGISTRY_CLIENT_SECRET"]
+N_CONSECUTIVE_MSG =os.environ["N_CONSECUTIVE_MSG"]
+
 
 FLASK_PORT = os.environ["FLASK_PORT"]
 
@@ -59,6 +61,7 @@ camera = Camera(
     password = KEYCLOAK_PASSWORD,
     registry_client_secret = KEYCLOAK_REGISTRY_CLIENT_SECRET,
     service_registry_url=SERVICE_REGISTRY_URL,
+    n_consecutive_msg=N_CONSECUTIVE_MSG,
     )
 
 print("attach_to_message_broker")
