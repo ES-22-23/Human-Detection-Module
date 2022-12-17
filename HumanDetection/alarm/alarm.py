@@ -127,6 +127,7 @@ class Alarm:
                 #self.consumer.consume()
                 #try:
                 self.kombu_connection.drain_events()
+                await asyncio.sleep(0)
 
                 #except TimeoutError:
                 #    print("No message received")
