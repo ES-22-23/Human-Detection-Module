@@ -25,7 +25,7 @@ class Camera:
     kombu_producer = None
     kombu_queue = None
 
-    def __init__(self, frames_per_second_to_process,imapi_url,smapi_url, keycloak_url, registry_client_id, username, password, registry_client_secret, service_registry_url):
+    def __init__(self, frames_per_second_to_process,imapi_url,smapi_url, keycloak_url, registry_client_id, username, password, registry_client_secret, service_registry_url,n_consecutive_msg):
         self.frames_per_second_to_process = frames_per_second_to_process
         self.imapi_url = imapi_url
         self.smapi_url = smapi_url
@@ -37,7 +37,7 @@ class Camera:
         self.password = password
         self.grant_type = "password"
         self.registry_client_secret = registry_client_secret
-
+        self.n_consecutive_msg = int(n_consecutive_msg)
         registry_data = {'client_id': self.registry_client_id, 'username': self.username, 'password':self.password, 'grant_type': self.grant_type, 'client_secret': self.registry_client_secret}
         #self.transmit_video_bool = False
 
@@ -191,7 +191,7 @@ class Camera:
                     #key = cv2.waitKey(1)
                     #if key == ord('q'):
                     #    break
-                    if counter % 100 == 0:
+                    if counter % self.n_consecutive_msg == 0:
                         print("before sleep")
                         await asyncio.sleep(0)
                     counter += 1
@@ -199,7 +199,7 @@ class Camera:
                 break
             
             frame_count += 1
-            await asyncio.sleep(0)
+            #await asyncio.sleep(0)
         #self.transmit_video_bool=True
         print("transmit_video_end")
         await asyncio.sleep(0) 
