@@ -25,11 +25,14 @@ SMAPI_URL =  os.environ["SMAPI_HOST"]
 SERVICE_REGISTRY_URL =  os.environ["SERVICE_REGISTRY_HOST"] 
 
 KEYCLOAK_URL = os.environ["KEYCLOAK_URL"]
-KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
 KEYCLOAK_USERNAME = os.environ["KEYCLOAK_USERNAME"]
 KEYCLOAK_PASSWORD = os.environ["KEYCLOAK_PASSWORD"]
+
+KEYCLOAK_SMAPI_CLIENT_ID = os.environ["KEYCLOAK_SMAPI_CLIENT_ID"]
 KEYCLOAK_SMAPI_CLIENT_SECRET = os.environ["KEYCLOAK_SMAPI_CLIENT_SECRET"]
 
+KEYCLOAK_REGISTRY_CLIENT_ID = os.environ["KEYCLOAK_REGISTRY_CLIENT_ID"]
+KEYCLOAK_REGISTRY_CLIENT_SECRET = os.environ["KEYCLOAK_REGISTRY_CLIENT_SECRET"]
 
 FLASK_PORT = os.environ["FLASK_PORT"]
 
@@ -52,11 +55,11 @@ threading.Thread(target=lambda: app.run(debug = False, port=FLASK_PORT, host="0.
 alarm = Alarm(
     smapi_url= SMAPI_URL,
     keycloak_url= KEYCLOAK_URL,
-    client_id = KEYCLOAK_SMAPI_CLIENT_ID,
+    registry_client_id = KEYCLOAK_REGISTRY_CLIENT_ID,
+    registry_client_secret = KEYCLOAK_REGISTRY_CLIENT_SECRET,
+    service_registry_url=SERVICE_REGISTRY_URL,
     username = KEYCLOAK_USERNAME,
     password = KEYCLOAK_PASSWORD,
-    client_secret = KEYCLOAK_SMAPI_CLIENT_SECRET,
-    service_registry_url=SERVICE_REGISTRY_URL
     )
 
 async def loopFogo():
@@ -67,7 +70,7 @@ async def loopFogo():
         broker_password=RABBIT_MQ_PASSWORD,
         ))
 
-alarm.get_property_id()
+alarm.get_property_id(KEYCLOAK_SMAPI_CLIENT_ID,KEYCLOAK_SMAPI_CLIENT_SECRET)
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
